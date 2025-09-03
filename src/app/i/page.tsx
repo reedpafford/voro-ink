@@ -1,12 +1,24 @@
 "use client";
+
+export const dynamic = "force-dynamic"; // don't prerender /i
+export const revalidate = 0;            // no SSG cache for this page
+
+import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
 
 const PROJECT_TYPES = ["Website Redesign","UX Audit","CRO","New Build","Design System","Research"];
 const BUDGETS = ["<$2.5k","$2.5–5k","$5–10k","$10–25k","$25k+"];
 const TIMELINES = ["ASAP (<2w)","2–4w","1–3m","3m+"];
 
-export default function IntakePage() {
+export default function Page() {
+  return (
+    <Suspense fallback={<main className="container py-16"><p>Loading…</p></main>}>
+      <Intake />
+    </Suspense>
+  );
+}
+
+function Intake() {
   const sp = useSearchParams();
   const token = sp.get("token") || "";
 
