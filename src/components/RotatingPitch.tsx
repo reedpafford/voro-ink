@@ -28,13 +28,16 @@ export default function RotatingPitch({ onLocked }: { onLocked?: () => void }) {
             animate={reduce ? { opacity: 1 } : { y: 0, opacity: 1 }}
             exit={reduce ? { opacity: 0 } : { y: -12, opacity: 0 }}
             transition={{ duration: 0.28 }}
-            className="underline decoration-[rgb(var(--brand))] decoration-4 underline-offset-4"
           >
-            {current}
+            {/* style the inner span instead of motion.span to avoid TS type friction */}
+            <span className="underline decoration-[rgb(var(--brand))] decoration-4 underline-offset-4">
+              {current}
+            </span>
           </motion.span>
         </AnimatePresence>
       </span>
     </h1>
   );
 }
+
 
