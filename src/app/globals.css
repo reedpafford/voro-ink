@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: light dark; }
+html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+/* Accent color (map your Figma later) */
+:root { --brand: 44 197 244; } /* #2CC5F4 → 44 197 244 */
+
+body { @apply bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-50; }
+.container { @apply mx-auto max-w-3xl px-6; }
+
+/* Focus ring */
+:where(input,button,a):focus-visible {
+  @apply outline-none ring-2 ring-offset-2 ring-neutral-900 dark:ring-neutral-200
+         ring-offset-white dark:ring-offset-neutral-950 rounded-xl;
+}

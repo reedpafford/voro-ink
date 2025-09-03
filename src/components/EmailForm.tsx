@@ -1,0 +1,69 @@
+"use client";
+import { useState } from "react";
+
+export default function EmailForm() {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [ok, setOk] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setErr(null);
+    const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (!valid) return setErr("Please enter a valid email.");
+    setLoading(true);
+    try {
+      const r = await fetch("/api/inquiry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, hp: "" })
+      });
+      const j = await r.json();
+      if (j.ok) setOk(true);
+      else setErr("Something went wrong. Try again.");
+    } catch {
+      setErr("Network error. Try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (ok) {
+    return (
+      <div className="mt-10 max-w-md mx-auto text-center space-y-3">
+        <h2 className="text-2xl font-semibold">Thanks — check your inbox</h2>
+        <p className="text-neutral-600">
+          We’ve sent a short intake form to <span className="font-medium">{email}</span>.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={submit} className="mt-8 flex flex-col gap-3 max-w-md mx-auto">
+      <label htmlFor="email" className="text-sm text-neutral-500">work email</label>
+      <input
+        id="email"
+        type="email"
+        inputMode="email"
+        autoComplete="email"
+        placeholder="you@company.com"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className="h-12 rounded-2xl border border-neutral-200 dark:border-neutral-800 px-4 bg-white/80 dark:bg-neutral-900/80 shadow-sm"
+        required
+      />
+      <input type="text" name="company" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
+      <button
+        type="submit"
+        disabled={loading}
+        className="h-12 rounded-2xl bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 font-medium shadow hover:opacity-90 disabled:opacity-70"
+      >
+        {loading ? "Sending…" : "Send inquiry"}
+      </button>
+      {err && <p role="alert" className="text-red-600">{err}</p>}
+      <p className="text-xs text-neutral-500">No spam. We’ll reply quickly.</p>
+    </form>
+  );
+}
