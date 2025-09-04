@@ -38,8 +38,8 @@ export default function RotatingPitch() {
     setTyped("");
     const chars = Array.from(current);
     let i = 0;
-    const TYPE_MS = 34;          // typing speed
-    const HOLD_MS = 1400;        // pause after fully typed
+    const TYPE_MS = 42;          // typing speed
+    const HOLD_MS = 1600;        // pause after fully typed
 
     typingRef.current = window.setInterval(() => {
       i++;
