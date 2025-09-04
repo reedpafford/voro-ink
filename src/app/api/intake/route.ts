@@ -1,3 +1,7 @@
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { verifyIntakeToken } from "@/lib/token";
@@ -17,6 +21,7 @@ export async function POST(req: Request) {
   try {
     const data = Body.parse(await req.json());
     const { email } = await verifyIntakeToken(data.token);
+
     await sendIntakeToOwner(email, {
       Company: data.company,
       Website: data.website,
@@ -25,9 +30,11 @@ export async function POST(req: Request) {
       Timeline: data.timeline,
       Goals: data.goals,
     });
+
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ ok: false }, { status: 400 });
   }
 }
+
