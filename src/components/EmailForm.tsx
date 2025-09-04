@@ -5,8 +5,8 @@ import { motion, useReducedMotion } from "framer-motion";
 
 export default function EmailForm({ onSuccess }: { onSuccess?: () => void }) {
   const [email, setEmail] = useState("");
-  const [launched, setLaunched] = useState(false); // plane launch
-  const [showCheck, setShowCheck] = useState(false); // brief sent indicator
+  const [launched, setLaunched] = useState(false);
+  const [showCheck, setShowCheck] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [t0] = useState(() => Date.now());
   const reduce = useReducedMotion();
@@ -18,13 +18,10 @@ export default function EmailForm({ onSuccess }: { onSuccess?: () => void }) {
     setErr(null);
     const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     if (!valid) return setErr("Please enter a valid email.");
-    if (Date.now() - t0 < 1000) return setErr("Please try again.");
+    if (Date.now() - t0 < 900) return setErr("Please try again.");
 
-    // Launch animation immediately; handle server in background.
     setLaunched(true);
-
-    // After ~0.9s plane flight, show a quick checkmark "sent" pop.
-    if (!reduce) setTimeout(() => setShowCheck(true), 900);
+    if (!reduce) setTimeout(() => setShowCheck(true), 900); // slower so users see it
 
     try {
       const r = await fetch("/api/inquiry", {
@@ -34,11 +31,8 @@ export default function EmailForm({ onSuccess }: { onSuccess?: () => void }) {
       });
       const j = await r.json();
       if (!j.ok) throw new Error("bad");
-
-      // Transition to thank-you after the user *sees* the animation.
       setTimeout(() => onSuccess?.(), reduce ? 0 : 1500);
     } catch {
-      // Allow retry on failure.
       setLaunched(false);
       setShowCheck(false);
       setErr("Something went wrong. Try again.");
@@ -46,7 +40,7 @@ export default function EmailForm({ onSuccess }: { onSuccess?: () => void }) {
   }
 
   return (
-    <form onSubmit={submit} className="mt-6 w-full max-w-xl mx-auto">
+    <form onSubmit={submit} className="mt-6 w-full stack">
       <div className="flex items-center gap-2">
         <input
           type="email"
@@ -59,7 +53,7 @@ export default function EmailForm({ onSuccess }: { onSuccess?: () => void }) {
           required
         />
 
-        {/* Button wrapper (CSS hover/active; avoids motion.button TS issues) */}
+        {/* button wrapper (CSS hover/active; Framer for plane/check only) */}
         <div className="relative shrink-0 h-10 w-10 group">
           <button
             type="submit"
@@ -68,7 +62,6 @@ export default function EmailForm({ onSuccess }: { onSuccess?: () => void }) {
             onClick={() => submit()}
             className="btn-circle absolute inset-0"
           >
-            {/* Arrow (hidden once launched) */}
             {!launched && (
               <span className="relative z-10 inline-block transition-transform group-hover:translate-x-[2px] group-active:translate-x-[3px]">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -76,8 +69,6 @@ export default function EmailForm({ onSuccess }: { onSuccess?: () => void }) {
                 </svg>
               </span>
             )}
-
-            {/* Tiny brand trail */}
             {!launched && (
               <span
                 className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 h-[2px] w-0 rounded-full transition-all duration-200 group-hover:w-[10px] group-active:w-[12px]"
@@ -86,7 +77,7 @@ export default function EmailForm({ onSuccess }: { onSuccess?: () => void }) {
             )}
           </button>
 
-          {/* Paper plane — slower launch */}
+          {/* slower plane */}
           {!reduce && (
             <span className="pointer-events-none absolute inset-0 m-auto">
               <motion.svg
@@ -106,7 +97,7 @@ export default function EmailForm({ onSuccess }: { onSuccess?: () => void }) {
             </span>
           )}
 
-          {/* Checkmark “sent” pop (brief) */}
+          {/* brief sent check */}
           {!reduce && showCheck && (
             <span className="pointer-events-none absolute inset-0 m-auto grid place-items-center">
               <motion.svg

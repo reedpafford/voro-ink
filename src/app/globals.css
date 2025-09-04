@@ -10,31 +10,29 @@ html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 body { background: rgb(var(--color-bg)); color: rgb(var(--color-fg)); }
 
 /* Layout helpers */
-.container { @apply mx-auto max-w-3xl px-6; }
+.container { @apply mx-auto px-6; }
+.stack { @apply mx-auto; max-width: 40rem; } /* 640px cap for both headline & field */
 
 /* Typographic primitives */
-.eyebrow {
-  font-size: var(--eyebrow-size);
-  color: rgb(var(--color-muted));
-}
+.eyebrow { font-size: var(--eyebrow-size); color: rgb(var(--color-muted)); }
 .hero-title {
   font-size: var(--hero-size);
   font-style: italic;
-  font-weight: 800;       /* confident but not screaming */
+  font-weight: 700;            /* down from 800 */
   letter-spacing: -0.01em;
-  line-height: 1.05;
+  line-height: 1.08;
 }
 .fine { font-size: var(--fine-size); color: rgb(var(--color-muted)); }
 
-/* Underline in brand teal (used by the rotating phrase) */
+/* Underline in brand teal */
 .underline-brand {
   text-decoration: underline;
   text-underline-offset: 6px;
-  text-decoration-thickness: 3px;
+  text-decoration-thickness: 2px; /* quieter */
   text-decoration-color: rgb(var(--color-brand));
 }
 
-/* Form primitives – minimalist, very subtle focus */
+/* Minimalist input + ultra-subtle focus */
 .pill-input {
   height: 48px;
   width: 100%;
@@ -42,17 +40,13 @@ body { background: rgb(var(--color-bg)); color: rgb(var(--color-fg)); }
   border: 1px solid rgb(var(--color-border));
   background: rgb(255 255 255 / .96);
   padding: 0 20px;
-  box-shadow:
-    inset 0 0 0 1px rgb(255 255 255 / .8),          /* soft inner line */
-    0 1px 0 0 rgb(0 0 0 / .03);                     /* hairline below */
-  transition: border-color .18s ease, box-shadow .18s ease, background .2s ease;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / .9);
+  transition: border-color .16s ease, background .16s ease, box-shadow .16s ease;
 }
 .pill-input:focus {
   outline: none;
-  border-color: rgb(190 190 190);
-  box-shadow:
-    inset 0 0 0 1px rgb(255 255 255 / .9),
-    0 1px 0 0 rgb(0 0 0 / .04);   /* barely brighter; no flashy ring */
+  border-color: rgb(198 198 198);     /* tiny nudge */
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / .95);
 }
 
 /* Circular send button */
@@ -68,9 +62,10 @@ body { background: rgb(var(--color-bg)); color: rgb(var(--color-fg)); }
 .btn-circle:hover { transform: translateY(-1px) scale(1.03); }
 .btn-circle:active { transform: scale(.96); }
 
-/* Accessibility focus (low key) */
+/* Low-key focus for clickables */
 :where(button, input, a):focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px rgb(255 255 255 / .9), 0 0 0 4px rgb(17 17 17 / .15);
+  box-shadow: 0 0 0 2px rgb(255 255 255 / .9), 0 0 0 4px rgb(17 17 17 / .12);
   border-radius: 9999px;
 }
+

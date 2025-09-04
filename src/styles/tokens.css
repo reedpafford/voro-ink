@@ -1,21 +1,21 @@
 :root {
-  /* COLORS (set your exact teal here) */
-  --color-bg: 255 255 255;         /* #FFFFFF */
-  --color-fg: 17 17 17;            /* #111111 */
-  --color-muted: 120 120 120;      /* neutral-500-ish */
-  --color-border: 215 215 215;     /* neutral-300 */
-  --color-brand: 44 197 244;       /* #2CC5F4 — your teal */
+  /* COLORS (keep your teal here) */
+  --color-bg: 255 255 255;
+  --color-fg: 17 17 17;
+  --color-muted: 120 120 120;
+  --color-border: 215 215 215;
+  --color-brand: 44 197 244; /* #2CC5F4 */
 
   /* RADII */
   --r-pill: 9999px;
   --r-soft: 16px;
 
-  /* SHADOWS (subtle, modern) */
+  /* SHADOWS (soft) */
   --shadow-soft: 0 1px 0 rgba(0,0,0,.04), 0 10px 25px rgba(0,0,0,.04);
 
-  /* FLUID TYPE */
-  --eyebrow-size: clamp(12px, 1.1vw, 16px);
-  --hero-size: clamp(28px, 6vw, 56px);
+  /* FLUID TYPE (smaller, quieter) */
+  --eyebrow-size: clamp(12px, 1vw, 15px);
+  --hero-size: clamp(22px, 3.8vw, 34px); /* ↓ from before */
   --fine-size: clamp(10px, .8vw, 12px);
 }
 
@@ -25,7 +25,7 @@
     --color-fg: 245 245 245;
     --color-muted: 165 165 165;
     --color-border: 70 70 70;
-    --color-brand: 44 197 244; /* keep teal */
+    --color-brand: 44 197 244;
   }
 }
 

@@ -11,7 +11,6 @@ export default function Page() {
     <main className="min-h-screen grid place-items-center">
       {!done ? (
         <section className="text-center container">
-          {/* generous white space gives modern, calm feel */}
           <div className="mb-6">
             <RotatingPitch />
           </div>
@@ -19,8 +18,10 @@ export default function Page() {
         </section>
       ) : (
         <section className="text-center container">
-          <h2 className="text-xl sm:text-2xl font-semibold">Thank you for reaching out</h2>
-          <p className="mt-2 text-sm text-neutral-600">We have received your inquiry and will reach out shortly</p>
+          <div className="stack">
+            <h2 className="text-xl sm:text-2xl font-semibold">Thank you for reaching out</h2>
+            <p className="mt-2 text-sm text-neutral-600">We have received your inquiry and will reach out shortly</p>
+          </div>
         </section>
       )}
 
@@ -30,5 +31,6 @@ export default function Page() {
     </main>
   );
 }
+
 
 
