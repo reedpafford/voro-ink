@@ -1,4 +1,60 @@
-/* Circular send button — upgraded hover/press micro-interactions */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --- Design Tokens (colors, radii, shadows, fluid type) --- */
+@import "../styles/tokens.css";
+
+/* Base */
+:root { color-scheme: light dark; }
+html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body { background: rgb(var(--color-bg)); color: rgb(var(--color-fg)); }
+
+/* Layout helpers */
+.container { @apply mx-auto px-6; }
+/* Keep headline and email field the same width for a clean, modern column */
+.stack { @apply mx-auto; max-width: 40rem; } /* 640px */
+
+/* Typography */
+.eyebrow {
+  font-size: var(--eyebrow-size);
+  color: rgb(var(--color-muted));
+}
+.hero-title {
+  font-size: var(--hero-size);
+  font-style: italic;
+  font-weight: 700;              /* quiet confidence */
+  letter-spacing: -0.01em;
+  line-height: 1.08;
+}
+.fine { font-size: var(--fine-size); color: rgb(var(--color-muted)); }
+
+/* Brand underline */
+.underline-brand {
+  text-decoration: underline;
+  text-underline-offset: 6px;
+  text-decoration-thickness: 2px; /* subtle */
+  text-decoration-color: rgb(var(--color-brand));
+}
+
+/* Inputs */
+.pill-input {
+  height: 48px;
+  width: 100%;
+  border-radius: 9999px;
+  border: 1px solid rgb(var(--color-border));
+  background: rgb(255 255 255 / .96);
+  padding: 0 20px;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / .9);
+  transition: border-color .16s ease, background .16s ease, box-shadow .16s ease;
+}
+.pill-input:focus {
+  outline: none;
+  border-color: rgb(198 198 198);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / .95);
+}
+
+/* Send button — premium micro-interactions */
 .btn-circle {
   position: relative;
   height: 40px;
@@ -13,26 +69,21 @@
     transform .18s ease,
     opacity .2s ease,
     box-shadow .18s ease;
-  overflow: hidden; /* needed for sheen */
+  overflow: hidden; /* sheen clip */
 }
-
-/* Lift on hover */
 .btn-circle:hover {
   transform: translateY(-1px) scale(1.03);
   box-shadow:
     0 2px 0 rgba(0,0,0,.04),
     0 14px 30px rgba(0,0,0,.06);
 }
-
-/* Soft press */
 .btn-circle:active {
   transform: scale(.965);
   box-shadow:
     inset 0 2px 6px rgba(0,0,0,.12),
     0 6px 16px rgba(0,0,0,.06);
 }
-
-/* Brand halo (behind the arrow) */
+/* Brand halo (behind icon) */
 .btn-circle::before {
   content: "";
   position: absolute;
@@ -46,7 +97,7 @@
   opacity: 0;
   filter: blur(4px);
   transition: transform .28s ease, opacity .28s ease, filter .28s ease;
-  z-index: 0; /* keep behind icon */
+  z-index: 0;
 }
 .btn-circle:hover::before {
   opacity: .75;
@@ -58,8 +109,7 @@
   transform: scale(.92);
   filter: blur(8px);
 }
-
-/* Sheen sweep (diagonal highlight) */
+/* Sheen sweep */
 .btn-circle::after {
   content: "";
   position: absolute;
@@ -72,19 +122,38 @@
     transparent);
   transform: translateX(-120%) rotate(20deg);
   transition: transform .6s ease;
-  z-index: 0; /* behind icon */
+  z-index: 0;
 }
 .btn-circle:hover::after {
   transform: translateX(120%) rotate(20deg);
+}
+
+/* Accessible, low-key focus */
+:where(button, input, a):focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(255 255 255 / .9), 0 0 0 4px rgb(17 17 17 / .12);
+  border-radius: 9999px;
+}
+
+/* Typewriter caret for rotating headline */
+@keyframes caretBlink { 0%, 40% { opacity: 1 } 50%, 90% { opacity: 0 } 100% { opacity: 1 } }
+.caret {
+  width: 1px;
+  height: 0.9em;
+  background: rgb(var(--color-brand));
+  display: inline-block;
+  margin-left: 3px;
+  vertical-align: -.05em;
+  animation: caretBlink 1s steps(1, end) infinite;
 }
 
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .btn-circle,
   .btn-circle::before,
-  .btn-circle::after {
+  .btn-circle::after,
+  .caret {
     transition: none !important;
     animation: none !important;
   }
 }
-

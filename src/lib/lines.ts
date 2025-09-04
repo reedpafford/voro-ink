@@ -5,7 +5,6 @@ export const ROTATION_LINES = [
   "Reduce drop-off",
   "Grow my online presence",
   "Modernize my brand",
-  "Fix mobile UX",
   "Speed up my site",
   "Polish the UI",
   "Book more demos",

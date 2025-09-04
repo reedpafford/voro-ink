@@ -1,15 +1,20 @@
-import "./globals.css";
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: process.env.SITE_NAME ?? "Voro",
-  description: "Voro — inquiry landing",
+export const metadata = {
+  title: "Voro",
+  description: "Voro — design that converts.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+import "./globals.css";
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      {/* antialiased improves the crisp “modern” feel */}
+      <body className="antialiased">{children}</body>
     </html>
   );
 }
+
