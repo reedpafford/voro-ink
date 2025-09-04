@@ -2,17 +2,75 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Tokens */
+@import "../styles/tokens.css";
+
 :root { color-scheme: light dark; }
 html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body { background: rgb(var(--color-bg)); color: rgb(var(--color-fg)); }
 
-/* Accent color (map your Figma later) */
-:root { --brand: 44 197 244; } /* #2CC5F4 → 44 197 244 */
-
-body { @apply bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-50; }
+/* Layout helpers */
 .container { @apply mx-auto max-w-3xl px-6; }
 
-/* Focus ring */
-:where(input,button,a):focus-visible {
-  @apply outline-none ring-2 ring-offset-2 ring-neutral-900 dark:ring-neutral-200
-         ring-offset-white dark:ring-offset-neutral-950 rounded-xl;
+/* Typographic primitives */
+.eyebrow {
+  font-size: var(--eyebrow-size);
+  color: rgb(var(--color-muted));
+}
+.hero-title {
+  font-size: var(--hero-size);
+  font-style: italic;
+  font-weight: 800;       /* confident but not screaming */
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+}
+.fine { font-size: var(--fine-size); color: rgb(var(--color-muted)); }
+
+/* Underline in brand teal (used by the rotating phrase) */
+.underline-brand {
+  text-decoration: underline;
+  text-underline-offset: 6px;
+  text-decoration-thickness: 3px;
+  text-decoration-color: rgb(var(--color-brand));
+}
+
+/* Form primitives – minimalist, very subtle focus */
+.pill-input {
+  height: 48px;
+  width: 100%;
+  border-radius: var(--r-pill);
+  border: 1px solid rgb(var(--color-border));
+  background: rgb(255 255 255 / .96);
+  padding: 0 20px;
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / .8),          /* soft inner line */
+    0 1px 0 0 rgb(0 0 0 / .03);                     /* hairline below */
+  transition: border-color .18s ease, box-shadow .18s ease, background .2s ease;
+}
+.pill-input:focus {
+  outline: none;
+  border-color: rgb(190 190 190);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / .9),
+    0 1px 0 0 rgb(0 0 0 / .04);   /* barely brighter; no flashy ring */
+}
+
+/* Circular send button */
+.btn-circle {
+  height: 40px; width: 40px;
+  border-radius: 50%;
+  background: rgb(var(--color-fg));
+  color: rgb(var(--color-bg));
+  display: grid; place-items: center;
+  box-shadow: var(--shadow-soft);
+  transition: transform .18s ease, opacity .2s ease;
+}
+.btn-circle:hover { transform: translateY(-1px) scale(1.03); }
+.btn-circle:active { transform: scale(.96); }
+
+/* Accessibility focus (low key) */
+:where(button, input, a):focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(255 255 255 / .9), 0 0 0 4px rgb(17 17 17 / .15);
+  border-radius: 9999px;
 }

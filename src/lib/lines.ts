@@ -7,5 +7,5 @@ export const ROTATION_LINES = [
   "book more meetings",
   "run A/B tests",
   "rank higher",
-  "better my brand", // final lock
-] as const;
+  "better my brand.",
+];
