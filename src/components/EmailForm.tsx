@@ -1,101 +1,81 @@
 "use client";
 
 import { useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
 
-export default function EmailForm({ onSuccess }: { onSuccess?: () => void }) {
+export default function EmailForm() {
   const [email, setEmail] = useState("");
-  const [launched, setLaunched] = useState(false);
-  const [showCheck, setShowCheck] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  const [t0] = useState(() => Date.now());
-  const reduce = useReducedMotion();
 
-  async function submit(e?: React.FormEvent) {
-    e?.preventDefault();
-    if (launched) return;
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (loading) return;
 
+    setLoading(true);
     setErr(null);
-    const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    if (!valid) return setErr("Please enter a valid email.");
-    if (Date.now() - t0 < 900) return setErr("Please try again.");
-
-    setLaunched(true);
-    if (!reduce) setTimeout(() => setShowCheck(true), 220);
-
     try {
       const r = await fetch("/api/inquiry", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, hp: "" }),
       });
-      const j = await r.json();
-      if (!j.ok) throw new Error("bad");
-      setTimeout(() => onSuccess?.(), reduce ? 0 : 1000);
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || !j?.ok) {
+        setErr("Something went wrong. Please try again.");
+      } else {
+        setSent(true);
+      }
     } catch {
-      setLaunched(false);
-      setShowCheck(false);
-      setErr("Something went wrong. Try again.");
+      setErr("Network error. Please try again.");
+    } finally {
+      setLoading(false);
     }
   }
 
+  if (sent) {
+    return (
+      <p className="fine mt-3 text-center">Thanks — check your email for the brief link.</p>
+    );
+  }
+
   return (
-    <form onSubmit={submit} className="mt-6 w-full stack">
-      <div className="flex items-center gap-2">
+    <form onSubmit={onSubmit} className="mx-auto flex w-full max-w-[560px] items-center gap-2">
+      <div className="relative flex-1">
         <input
           type="email"
           inputMode="email"
           autoComplete="email"
+          required
+          className="h-12 w-full rounded-[28px] border border-neutral-300 bg-white px-5 text-[15px] text-neutral-900 placeholder-neutral-500 placeholder:opacity-60 shadow-[inset_0_0_0_1px_rgba(255,255,255,.9)] focus:outline-none"
+          style={{ colorScheme: "light" }}
           placeholder="work@email.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="pill-input"
-          required
+          aria-label="Work email"
         />
-
-        <div className="relative shrink-0 h-10 w-10 group">
-          <button
-            type="submit"
-            aria-label="Send inquiry"
-            disabled={launched}
-            onClick={() => submit()}
-            className={`btn-circle absolute inset-0 ${launched ? "sent" : ""}`}
-          >
-            {!launched && (
-              <span className="relative z-[2] inline-block transition-[opacity,transform] duration-200 ease-out group-active:translate-x-[2px] group-hover:translate-x-[2px]">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M5 12h12M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </span>
-            )}
-          </button>
-
-          {!reduce && showCheck && (
-            <span className="pointer-events-none absolute inset-0 m-auto grid place-items-center">
-              <motion.svg
-                key="check"
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                aria-hidden="true"
-                initial={{ scale: 0.6, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
-                style={{ position: "relative", zIndex: 2 }}
-              >
-                <path d="M20 6 9 17l-5-5" stroke="rgb(255,255,255)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-              </motion.svg>
-            </span>
-          )}
-        </div>
       </div>
 
-      {err && <p role="alert" className="mt-2 text-sm text-red-600 text-center">{err}</p>}
-      <p className="mt-3 text-center fine">No spam. We’ll reply quickly.</p>
+      <button
+        type="submit"
+        className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white shadow-sm transition hover:shadow-md active:translate-y-[1px]"
+        aria-label={loading ? "Sending…" : "Send"}
+        disabled={loading}
+      >
+        {loading ? (
+          <span className="spinner" aria-hidden="true" />
+        ) : (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h12M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        )}
+      </button>
+
+      {err && <p role="alert" className="sr-only">{err}</p>}
     </form>
   );
 }
+
 
 
 
