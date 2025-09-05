@@ -52,31 +52,48 @@ export async function sendMail({
   });
 }
 
-/**
- * Legacy/back-compat helper expected by older /api/intake code.
- * Accepts any intake payload and emails it to the owner.
- */
-export async function sendIntakeToOwner(intake: any) {
+/* ------------------------------------------------------------------ */
+/* Legacy + new API: sendIntakeToOwner supports 1 or 2 arguments.     */
+/*  - sendIntakeToOwner(intakeObj)                                    */
+/*  - sendIntakeToOwner(email, fieldsObj)                             */
+/* ------------------------------------------------------------------ */
+export function sendIntakeToOwner(
+  intake: any
+): Promise<unknown>;
+export function sendIntakeToOwner(
+  email: string,
+  fields: Record<string, any>
+): Promise<unknown>;
+export async function sendIntakeToOwner(
+  a: any,
+  b?: Record<string, any>
+) {
   if (!OWNER_TO) {
     const err: any = new Error("Owner email not configured (MAIL_TO/NOTIFY_TO_EMAIL).");
     err.code = "mail_config_missing";
     throw err;
   }
 
-  // Flatten object into key/value rows
-  const entries = Object.entries(intake || {});
+  // Normalize args to a single intake object
+  const intake =
+    typeof a === "string" ? { email: a, ...(b || {}) } : (a || {});
+
   const subject =
     "New brief — " +
-    (safeString(intake?.company) ||
-      safeString(intake?.email) ||
+    (safeString((intake as any)?.company) ||
+      safeString((intake as any)?.email) ||
       "Incoming");
 
+  const entries = Object.entries(intake);
   const rowsHtml = entries
-    .map(([k, v]) => {
-      const key = escapeHtml(k);
-      const val = escapeHtml(safeString(v));
-      return `<tr><td style="padding:6px 10px;"><b>${key}</b></td><td style="padding:6px 10px;">${val}</td></tr>`;
-    })
+    .map(
+      ([k, v]) =>
+        `<tr><td style="padding:6px 10px;"><b>${escapeHtml(
+          k
+        )}</b></td><td style="padding:6px 10px;">${escapeHtml(
+          safeString(v)
+        )}</td></tr>`
+    )
     .join("");
 
   const html = `
@@ -87,12 +104,11 @@ export async function sendIntakeToOwner(intake: any) {
   `;
 
   const text =
-    entries
-      .map(([k, v]) => `${k}: ${safeString(v)}`)
-      .join("\n") || "No fields provided.";
+    entries.map(([k, v]) => `${k}: ${safeString(v)}`).join("\n") ||
+    "No fields provided.";
 
-  // Prefer the submitter as reply-to if present
-  const replyTo = safeString(intake?.email) || undefined;
+  const replyTo =
+    typeof (intake as any)?.email === "string" ? (intake as any).email : undefined;
 
   return sendMail({
     to: OWNER_TO,
@@ -103,9 +119,7 @@ export async function sendIntakeToOwner(intake: any) {
   });
 }
 
-/**
- * You can still use these in newer routes.
- */
+/* You still have the newer helpers available */
 export async function notifyOwner(inquirerEmail: string) {
   if (!OWNER_TO) {
     const err: any = new Error("Owner email not configured.");
@@ -143,7 +157,7 @@ export async function autoReply(toEmail: string, token: string, origin: string) 
   return sendMail({ to: toEmail, subject, text, html });
 }
 
-// ---------- utils ----------
+/* utils */
 function escapeHtml(s: string) {
   return String(s ?? "")
     .replace(/&/g, "&amp;")
@@ -160,5 +174,6 @@ function safeString(v: unknown): string {
     return String(v);
   }
 }
+
 
 
