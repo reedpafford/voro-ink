@@ -1,79 +1,125 @@
+// src/lib/email.ts
 import nodemailer from "nodemailer";
 
-/**
- * Gmail SMTP transport
- * - Uses your env: GMAIL_USER, GMAIL_APP_PASSWORD, MAIL_FROM
- * - We keep things light on typing because the build runs fine without @types/nodemailer
- */
-const FROM = process.env.MAIL_FROM || `Voro (Reed) <${process.env.GMAIL_USER}>`;
-const GMAIL_USER = process.env.GMAIL_USER!;
-const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD!;
+export type SendMailInput = {
+  to: string;
+  subject: string;
+  text?: string;
+  html?: string;
+  replyTo?: string;
+  from?: string;
+};
 
+const GMAIL_USER = process.env.GMAIL_USER || "";
+const GMAIL_PASS = process.env.GMAIL_PASS || "";
+const DEFAULT_FROM =
+  process.env.MAIL_FROM || (GMAIL_USER ? `Voro (Reed) <${GMAIL_USER}>` : "");
+const OWNER_TO = process.env.MAIL_TO || GMAIL_USER;
+
+// Reusable transporter (Node / server runtime only)
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
   secure: true,
-  auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD },
+  auth: { user: GMAIL_USER, pass: GMAIL_PASS },
 });
 
+export async function sendMail({
+  to,
+  subject,
+  text,
+  html,
+  replyTo,
+  from,
+}: SendMailInput) {
+  if (!GMAIL_USER || !GMAIL_PASS || !DEFAULT_FROM) {
+    const err: any = new Error(
+      "Mail not configured. Set GMAIL_USER, GMAIL_PASS (app password), MAIL_FROM."
+    );
+    err.code = "mail_config_missing";
+    throw err;
+  }
+
+  return transporter.sendMail({
+    from: from || DEFAULT_FROM,
+    to,
+    subject,
+    text: text ?? (html ? html.replace(/<[^>]+>/g, "") : ""),
+    html,
+    replyTo,
+  });
+}
+
 /**
- * Build the intake link. Priority:
- *  1) explicitly passed base (from the incoming Request origin)
- *  2) NEXT_PUBLIC_SITE_URL (env per environment: Preview/Production)
- *  3) localhost (dev fallback)
+ * Sends you a heads-up that someone entered their email on the landing page.
  */
-export function intakeLink(token: string, base?: string) {
-  const fallback = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-  const b = (base || fallback).replace(/\/$/, "");
-  return `${b}/i?token=${encodeURIComponent(token)}`;
-}
+export async function notifyOwner(inquirerEmail: string) {
+  if (!OWNER_TO) {
+    const err: any = new Error("MAIL_TO not set");
+    err.code = "mail_config_missing";
+    throw err;
+  }
 
-/** Email Reed when a new inquiry hits */
-export async function notifyOwner(email: string) {
-  await transporter.sendMail({
-    from: FROM,
-    to: process.env.NOTIFY_TO_EMAIL || GMAIL_USER,
-    subject: "New inquiry",
-    html: `<p>New inquiry from <strong>${email}</strong></p>`,
+  const subject = `New inquiry — ${inquirerEmail}`;
+  const text = `A new inquiry was received.\n\nEmail: ${inquirerEmail}\nTime: ${new Date().toISOString()}`;
+  const html = `
+    <h2 style="margin:0 0 10px;font-family:Inter,system-ui,Segoe UI,Arial,sans-serif">New inquiry</h2>
+    <p style="margin:0 0 8px">Email: <b>${escapeHtml(inquirerEmail)}</b></p>
+    <p style="margin:0;color:#666">Time: ${new Date().toISOString()}</p>
+  `;
+
+  return sendMail({
+    to: OWNER_TO,
+    subject,
+    text,
+    html,
+    replyTo: inquirerEmail,
   });
 }
 
-/** Auto-reply to the visitor with the intake link */
-export async function autoReply(email: string, token?: string, base?: string) {
-  const link = token ? intakeLink(token, base) : "";
-  await transporter.sendMail({
-    from: FROM,
-    to: email,
-    subject: "Quick intake form — Voro",
-    html: `
-      <p>Thanks for reaching out to Voro!</p>
-      <p>To help us reply with the right plan and estimate, please answer a few quick questions.</p>
-      ${link ? `<p><a href="${link}" style="display:inline-block;padding:12px 16px;border-radius:10px;background:#111;color:#fff;text-decoration:none">Open quick intake form</a></p>` : ""}
-      ${link ? `<p>If the button doesn’t work, copy this link:<br>${link}</p>` : ""}
-      <p>— Voro (Reed)</p>
-    `,
-    replyTo: FROM,
+/**
+ * Sends the submitter a link to the project brief (/i) using a signed token.
+ */
+export async function autoReply(toEmail: string, token: string, origin: string) {
+  const briefUrl = `${origin}/i?email=${encodeURIComponent(
+    toEmail
+  )}&t=${encodeURIComponent(token)}`;
+
+  const subject = "Thanks — tell us a bit about your project";
+  const text = [
+    `Thanks for reaching out to Voro!`,
+    ``,
+    `Please complete a short brief so we can respond quickly:`,
+    briefUrl,
+    ``,
+    `If the link doesn't open, copy/paste it into your browser.`,
+    ``,
+    `— Voro`,
+  ].join("\n");
+
+  const html = `
+    <div style="font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;line-height:1.5">
+      <p>Thanks for reaching out to <b>Voro</b>!</p>
+      <p>Please complete a short brief so we can respond quickly:</p>
+      <p><a href="${briefUrl}" style="display:inline-block;background:#111;color:#fff;padding:10px 14px;border-radius:10px;text-decoration:none">Open project brief</a></p>
+      <p style="color:#666;margin-top:10px">If the button doesn't open, copy/paste this URL:<br/><a href="${briefUrl}">${briefUrl}</a></p>
+      <p>— Voro</p>
+    </div>
+  `;
+
+  return sendMail({
+    to: toEmail,
+    subject,
+    text,
+    html,
   });
 }
 
-/** Send the submitted intake answers to Reed */
-export async function sendIntakeToOwner(
-  email: string,
-  fields: Record<string, string | undefined>
-) {
-  const rows = Object.entries(fields)
-    .filter(([, v]) => v && String(v).trim().length)
-    .map(
-      ([k, v]) =>
-        `<tr><td style="padding:4px 8px;"><strong>${k}</strong></td><td style="padding:4px 8px;">${v}</td></tr>`
-    )
-    .join("");
-
-  await transporter.sendMail({
-    from: FROM,
-    to: process.env.NOTIFY_TO_EMAIL || GMAIL_USER,
-    subject: `Intake submitted — ${email}`,
-    html: `<p>Intake submitted by <strong>${email}</strong>:</p><table>${rows}</table>`,
-  });
+function escapeHtml(s: string) {
+  return String(s || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 

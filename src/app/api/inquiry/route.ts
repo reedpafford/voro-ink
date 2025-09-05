@@ -48,12 +48,12 @@ export async function POST(req: Request) {
     // Build correct site origin from the incoming request
     const origin = new URL(req.url).origin;
 
+    // Send mailbox notification + auto-reply with brief link (in parallel)
     await Promise.all([notifyOwner(email), autoReply(email, token, origin)]);
 
     return NextResponse.json({ ok: true });
   } catch (e) {
-    console.error(e);
+    console.error("inquiry POST error:", e);
     return NextResponse.json({ ok: false }, { status: 400 });
   }
 }
-
