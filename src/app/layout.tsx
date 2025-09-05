@@ -1,9 +1,11 @@
-export const metadata = {
-  title: "Voro",
-  description: "Voro — design that converts.",
-};
-
+import type { Metadata } from "next";
 import "./globals.css";
+
+export const metadata: Metadata = {
+  title: "Voro — better my brand",
+  description: "Voro helps brands ship cleaner UX, faster sites, and design that converts.",
+  themeColor: "#ffffff",
+};
 
 export default function RootLayout({
   children,
@@ -12,7 +14,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      {/* antialiased improves the crisp “modern” feel */}
+      <head>
+        <meta name="color-scheme" content="light" />
+      </head>
       <body className="antialiased">{children}</body>
     </html>
   );
